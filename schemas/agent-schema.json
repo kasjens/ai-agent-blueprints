@@ -1,0 +1,440 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/your-org/agent-blueprints/schemas/agent-schema.json",
+  "title": "Agent Blueprint Schema",
+  "description": "Schema for validating agent blueprint structure and content",
+  "type": "object",
+  "required": ["metadata", "content"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["name", "version", "category", "author", "updated"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*[a-z0-9]$",
+          "description": "Agent name in kebab-case",
+          "minLength": 3,
+          "maxLength": 50
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "description": "Semantic version (e.g., 1.0.0)"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["core", "domain-specific", "meta-agent", "experimental"],
+          "description": "Agent category"
+        },
+        "author": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100,
+          "description": "Author name or organization"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$"
+          },
+          "minItems": 1,
+          "maxItems": 10,
+          "uniqueItems": true,
+          "description": "Descriptive tags for categorization"
+        },
+        "updated": {
+          "type": "string",
+          "format": "date",
+          "description": "Last update date (YYYY-MM-DD)"
+        },
+        "complexity": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Agent complexity level"
+        },
+        "dependencies": {
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": ["none"]
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          ],
+          "description": "Required tools or external dependencies"
+        }
+      }
+    },
+    "content": {
+      "type": "object",
+      "required": ["overview", "purpose", "system_prompt", "examples", "validation"],
+      "properties": {
+        "overview": {
+          "type": "string",
+          "minLength": 50,
+          "maxLength": 500,
+          "description": "Brief description of agent purpose and capabilities"
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 200,
+          "description": "One-line purpose statement"
+        },
+        "use_cases": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 150
+          },
+          "minItems": 2,
+          "maxItems": 10,
+          "description": "List of primary use cases"
+        },
+        "system_prompt": {
+          "type": "object",
+          "required": ["role", "instructions", "constraints"],
+          "properties": {
+            "role": {
+              "type": "string",
+              "minLength": 20,
+              "description": "Agent role and expertise definition"
+            },
+            "environment": {
+              "type": "object",
+              "properties": {
+                "current_date": {
+                  "type": "string"
+                },
+                "working_directory": {
+                  "type": "string"
+                },
+                "available_tools": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "description": "Environment context and variables"
+            },
+            "instructions": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["category", "directives"],
+                "properties": {
+                  "category": {
+                    "type": "string",
+                    "description": "Instruction category name"
+                  },
+                  "directives": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 10
+                    },
+                    "minItems": 1,
+                    "description": "Specific actionable instructions"
+                  }
+                }
+              },
+              "minItems": 1,
+              "description": "Categorized instruction sets"
+            },
+            "reasoning_process": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 10
+              },
+              "minItems": 3,
+              "description": "Step-by-step reasoning approach"
+            },
+            "constraints": {
+              "type": "object",
+              "required": ["prohibitions", "requirements"],
+              "properties": {
+                "prohibitions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 10
+                  },
+                  "minItems": 1,
+                  "description": "Things the agent must NOT do"
+                },
+                "requirements": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 10
+                  },
+                  "minItems": 1,
+                  "description": "Things the agent must ALWAYS do"
+                }
+              }
+            },
+            "output_format": {
+              "type": "string",
+              "minLength": 20,
+              "description": "Specification of response structure"
+            },
+            "tone_and_style": {
+              "type": "object",
+              "description": "Communication style guidelines"
+            }
+          }
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "description", "when_to_use"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$",
+                "description": "Tool name in snake_case"
+              },
+              "description": {
+                "type": "string",
+                "minLength": 20,
+                "description": "What the tool does"
+              },
+              "when_to_use": {
+                "type": "string",
+                "minLength": 20,
+                "description": "Conditions for tool usage"
+              },
+              "parameters": {
+                "type": "object",
+                "patternProperties": {
+                  "^[a-z][a-z0-9_]*$": {
+                    "type": "object",
+                    "required": ["type", "description"],
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": ["string", "number", "boolean", "array", "object"]
+                      },
+                      "description": {
+                        "type": "string",
+                        "minLength": 10
+                      },
+                      "required": {
+                        "type": "boolean"
+                      },
+                      "default": {}
+                    }
+                  }
+                }
+              },
+              "example_usage": {
+                "type": "string",
+                "minLength": 10,
+                "description": "Example of calling the tool"
+              },
+              "output_handling": {
+                "type": "string",
+                "minLength": 20,
+                "description": "How to interpret tool results"
+              }
+            }
+          },
+          "description": "Tool definitions and schemas"
+        },
+        "examples": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["scenario", "user_input", "agent_response"],
+            "properties": {
+              "scenario": {
+                "type": "string",
+                "minLength": 10,
+                "maxLength": 100,
+                "description": "Example scenario name"
+              },
+              "user_input": {
+                "type": "string",
+                "minLength": 5,
+                "description": "Example user message"
+              },
+              "agent_response": {
+                "type": "string",
+                "minLength": 20,
+                "description": "Example agent response"
+              },
+              "notes": {
+                "type": "string",
+                "description": "Optional explanation of the example"
+              }
+            }
+          },
+          "minItems": 3,
+          "maxItems": 10,
+          "description": "Usage examples covering various scenarios"
+        },
+        "validation": {
+          "type": "object",
+          "required": ["checklist", "test_scenarios"],
+          "properties": {
+            "checklist": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["category", "items"],
+                "properties": {
+                  "category": {
+                    "type": "string",
+                    "description": "Validation category"
+                  },
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 10
+                    },
+                    "minItems": 1
+                  }
+                }
+              },
+              "minItems": 1,
+              "description": "Validation checklist"
+            },
+            "test_scenarios": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["name", "input", "expected"],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 5
+                  },
+                  "input": {
+                    "type": "string",
+                    "minLength": 5
+                  },
+                  "expected": {
+                    "type": "string",
+                    "minLength": 10
+                  }
+                }
+              },
+              "minItems": 3,
+              "description": "Test scenarios with expected behaviors"
+            }
+          }
+        },
+        "configuration": {
+          "type": "object",
+          "description": "Customizable parameters",
+          "patternProperties": {
+            "^[a-z][a-z0-9_]*$": {
+              "type": "object",
+              "required": ["default", "description"],
+              "properties": {
+                "default": {},
+                "description": {
+                  "type": "string",
+                  "minLength": 10
+                },
+                "type": {
+                  "type": "string",
+                  "enum": ["string", "number", "boolean", "array", "object"]
+                },
+                "options": {
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "version_history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["version", "date", "changes"],
+            "properties": {
+              "version": {
+                "type": "string",
+                "pattern": "^\\d+\\.\\d+\\.\\d+$"
+              },
+              "date": {
+                "type": "string",
+                "format": "date"
+              },
+              "changes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 10
+                },
+                "minItems": 1
+              }
+            }
+          },
+          "minItems": 1,
+          "description": "Version history with changes"
+        },
+        "related_agents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "relationship"],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Related agent filename"
+              },
+              "relationship": {
+                "type": "string",
+                "minLength": 10,
+                "description": "How this agent relates"
+              }
+            }
+          },
+          "description": "Related or complementary agents"
+        },
+        "notes": {
+          "type": "object",
+          "properties": {
+            "implementation_tips": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 10
+              }
+            },
+            "limitations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 10
+              }
+            },
+            "future_enhancements": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 10
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
