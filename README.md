@@ -109,6 +109,7 @@ General-purpose agents suitable for common tasks:
 
 ### Domain-Specific Agents
 Specialized agents for particular domains:
+- **solution-architect-agent**: System design and architecture planning
 - **code-reviewer**: Code analysis and feedback
 - **data-analyst**: Data processing and insights
 - **content-writer**: Content creation with style guidelines
